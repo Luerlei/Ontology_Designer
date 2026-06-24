@@ -1,0 +1,73 @@
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.editor section {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 14px;
+}
+.editor h4 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: #0f172a;
+}
+.editor h4 small {
+  color: #94a3b8;
+  font-weight: 400;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+.field > span {
+  color: #64748b;
+}
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.grid3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+.sub-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.inline-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.w-sm {
+  width: 120px;
+}
+.w-md {
+  width: 200px;
+}
+.w-lg {
+  flex: 1;
+  min-width: 200px;
+}
+.del-row {
+  align-self: flex-start;
+  background: #fee2e2;
+  color: #b91c1c;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 12px;
+}
