@@ -86,9 +86,16 @@ export const ruleModelSchema = z.object({
   id: idSchema,
   name: z.string().min(1),
   description: z.string().optional(),
-  type: z.enum(['validation', 'calculation', 'derivation', 'risk', 'event-driven']),
-  subscribedEventRefs: z.array(z.string()),
+  type: z.enum(['validation', 'calculation', 'derivation', 'risk']),
   condition: z.string(),
+})
+
+export const policyModelSchema = z.object({
+  id: idSchema,
+  name: z.string().min(1),
+  description: z.string().optional(),
+  subscribedEventRefs: z.array(z.string()),
+  condition: z.string().default(''),
   triggeredEventRefs: z.array(z.string()),
 })
 
@@ -99,4 +106,5 @@ export const ontologyProjectSchema = z.object({
   behaviors: z.array(behaviorModelSchema),
   events: z.array(eventModelSchema),
   rules: z.array(ruleModelSchema),
+  policies: z.array(policyModelSchema).default([]),
 })

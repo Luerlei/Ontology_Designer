@@ -59,7 +59,7 @@ export function buildAggregateGraph(obj: ObjectModel): { nodes: Node[]; edges: E
   return { nodes, edges }
 }
 
-/** 全局事件链图：行为 / 事件 / 规则 三类节点，含环路高亮 */
+/** 全局事件链图：行为 / 事件 / 策略 三类节点，含环路高亮 */
 export function buildEventChainGraph(p: OntologyProject): { nodes: Node[]; edges: Edge[] } {
   const adj = new Map<string, string[]>()
   const rawEdges: { id: string; source: string; target: string; label: string }[] = []
@@ -73,9 +73,9 @@ export function buildEventChainGraph(p: OntologyProject): { nodes: Node[]; edges
     b.producedEventRefs.forEach((e) => addEdge(`BHV:${b.id}`, `EVT:${e}`, '产生'))
     b.subscribedEventRefs.forEach((e) => addEdge(`EVT:${e}`, `BHV:${b.id}`, '订阅'))
   }
-  for (const r of p.rules) {
-    r.subscribedEventRefs.forEach((e) => addEdge(`EVT:${e}`, `RULE:${r.id}`, '订阅'))
-    r.triggeredEventRefs.forEach((e) => addEdge(`RULE:${r.id}`, `EVT:${e}`, '触发'))
+  for (const x of p.policies) {
+    x.subscribedEventRefs.forEach((e) => addEdge(`EVT:${e}`, `POLICY:${x.id}`, '订阅'))
+    x.triggeredEventRefs.forEach((e) => addEdge(`POLICY:${x.id}`, `EVT:${e}`, '触发'))
   }
 
   // 收集所有节点
@@ -87,7 +87,7 @@ export function buildEventChainGraph(p: OntologyProject): { nodes: Node[]; edges
   // 把未连边的孤立模型也放进来
   p.behaviors.forEach((b) => nodeIds.add(`BHV:${b.id}`))
   p.events.forEach((e) => nodeIds.add(`EVT:${e.id}`))
-  p.rules.forEach((r) => nodeIds.add(`RULE:${r.id}`))
+  p.policies.forEach((x) => nodeIds.add(`POLICY:${x.id}`))
 
   // 最长路径分层
   const layer = new Map<string, number>()
@@ -108,14 +108,14 @@ export function buildEventChainGraph(p: OntologyProject): { nodes: Node[]; edges
     const [kind, ref] = id.split(':')
     if (kind === 'BHV') return p.behaviors.find((b) => b.id === ref)?.name ?? ref
     if (kind === 'EVT') return p.events.find((e) => e.id === ref)?.name ?? ref
-    if (kind === 'RULE') return p.rules.find((r) => r.id === ref)?.name ?? ref
+    if (kind === 'POLICY') return p.policies.find((x) => x.id === ref)?.name ?? ref
     return ref
   }
   const colorOf = (id: string): string => {
     const kind = id.split(':')[0]
     if (kind === 'BHV') return MODEL_META.BHV.color
     if (kind === 'EVT') return MODEL_META.EVT.color
-    return MODEL_META.RULE.color
+    return MODEL_META.POLICY.color
   }
 
   const nodes: Node[] = []

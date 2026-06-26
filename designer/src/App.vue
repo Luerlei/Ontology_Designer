@@ -7,6 +7,7 @@ import ObjectEditor from './components/editors/ObjectEditor.vue'
 import BehaviorEditor from './components/editors/BehaviorEditor.vue'
 import EventEditor from './components/editors/EventEditor.vue'
 import RuleEditor from './components/editors/RuleEditor.vue'
+import PolicyEditor from './components/editors/PolicyEditor.vue'
 import AggregateGraph from './components/graph/AggregateGraph.vue'
 import EventChainGraph from './components/graph/EventChainGraph.vue'
 import ValidationPanel from './components/ValidationPanel.vue'
@@ -40,6 +41,7 @@ function pickKind(kind: ModelKind) {
           <i v-if="store.warningCount" class="warn">{{ store.warningCount }} 警告</i>
         </span>
         <button @click="store.loadSample()">加载示例</button>
+        <button @click="store.loadSupplierSample()">加载供应商示例</button>
         <button @click="store.newEmpty()">新建空白</button>
       </div>
     </header>
@@ -107,6 +109,11 @@ function pickKind(kind: ModelKind) {
             :model="store.selectedModel as any"
           />
           <RuleEditor
+            v-else-if="store.selectedKind === 'RULE'"
+            :key="store.selectedId!"
+            :model="store.selectedModel as any"
+          />
+          <PolicyEditor
             v-else
             :key="store.selectedId!"
             :model="store.selectedModel as any"

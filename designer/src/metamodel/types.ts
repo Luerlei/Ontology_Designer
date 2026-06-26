@@ -3,7 +3,7 @@
  * 这是设计器的“地基”：描述一份合法本体的结构，表单、校验、序列化都依赖它。
  */
 
-export type ModelKind = 'OBJ' | 'BHV' | 'EVT' | 'RULE'
+export type ModelKind = 'OBJ' | 'BHV' | 'EVT' | 'RULE' | 'POLICY'
 
 export type AttributeType =
   | 'string'
@@ -94,7 +94,7 @@ export interface EventModel {
   deliverySemantics: DeliverySemantics
 }
 
-export type RuleType = 'validation' | 'calculation' | 'derivation' | 'risk' | 'event-driven'
+export type RuleType = 'validation' | 'calculation' | 'derivation' | 'risk'
 
 /** RULE 规则模型 */
 export interface RuleModel {
@@ -102,7 +102,15 @@ export interface RuleModel {
   name: string
   description?: string
   type: RuleType
-  /** 订阅的事件 -> EventModel.id（事件驱动规则） */
+  condition: string
+}
+
+/** POLICY 策略模型（事件驱动反应器） */
+export interface PolicyModel {
+  id: string
+  name: string
+  description?: string
+  /** 订阅的事件 -> EventModel.id */
   subscribedEventRefs: string[]
   condition: string
   /** 满足条件触发的事件 -> EventModel.id */
@@ -117,6 +125,7 @@ export interface OntologyProject {
   behaviors: BehaviorModel[]
   events: EventModel[]
   rules: RuleModel[]
+  policies: PolicyModel[]
 }
 
-export type AnyModel = ObjectModel | BehaviorModel | EventModel | RuleModel
+export type AnyModel = ObjectModel | BehaviorModel | EventModel | RuleModel | PolicyModel

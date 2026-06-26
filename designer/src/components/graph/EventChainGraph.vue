@@ -18,7 +18,7 @@ const cycles = computed(() => detectCycles(store.project))
       <span class="legend">
         <i class="dot" style="border-color: #16a34a"></i>行为 BHV
         <i class="dot" style="border-color: #d97706"></i>事件 EVT
-        <i class="dot" style="border-color: #9333ea"></i>规则 RULE
+        <i class="dot" style="border-color: #7c3aed"></i>策略 POLICY
       </span>
       <span v-if="cycles.length" class="cycle-warn">⚠ 检测到 {{ cycles.length }} 处环路（红色高亮）</span>
     </div>

@@ -30,6 +30,7 @@ export function validateProject(p: OntologyProject): ValidationIssue[] {
   checkDuplicates(p.behaviors.map((b) => b.id), 'BHV', issues)
   checkDuplicates(p.events.map((e) => e.id), 'EVT', issues)
   checkDuplicates(p.rules.map((r) => r.id), 'RULE', issues)
+  checkDuplicates(p.policies.map((x) => x.id), 'POLICY', issues)
 
   // 2. 引用完整性
   for (const o of p.objects) {
@@ -62,15 +63,30 @@ export function validateProject(p: OntologyProject): ValidationIssue[] {
   }
 
   for (const r of p.rules) {
-    checkRefs(r.subscribedEventRefs, evtIds, 'RULE', r.id, '订阅事件', 'DANGLING_EVENT', issues)
-    checkRefs(r.triggeredEventRefs, evtIds, 'RULE', r.id, '触发事件', 'DANGLING_EVENT', issues)
-    if (r.type === 'event-driven' && r.subscribedEventRefs.length === 0) {
+    if (r.type === 'validation' || r.type === 'calculation' || r.type === 'derivation' || r.type === 'risk') {
+      // noop
+    }
+  }
+
+  for (const x of p.policies) {
+    checkRefs(x.subscribedEventRefs, evtIds, 'POLICY', x.id, '订阅事件', 'DANGLING_EVENT', issues)
+    checkRefs(x.triggeredEventRefs, evtIds, 'POLICY', x.id, '触发事件', 'DANGLING_EVENT', issues)
+    if (x.subscribedEventRefs.length === 0) {
       issues.push({
         level: 'warning',
-        kind: 'RULE',
-        ref: r.id,
-        code: 'EVENT_RULE_NO_SUB',
-        message: `事件驱动规则「${r.id}」未订阅任何事件`,
+        kind: 'POLICY',
+        ref: x.id,
+        code: 'POLICY_NO_SUB',
+        message: `策略「${x.id}」未订阅任何事件`,
+      })
+    }
+    if (x.triggeredEventRefs.length === 0) {
+      issues.push({
+        level: 'warning',
+        kind: 'POLICY',
+        ref: x.id,
+        code: 'POLICY_NO_TRIGGER',
+        message: `策略「${x.id}」未触发任何事件`,
       })
     }
   }
@@ -79,10 +95,10 @@ export function validateProject(p: OntologyProject): ValidationIssue[] {
   for (const e of p.events) {
     const hasProducer =
       p.behaviors.some((b) => b.producedEventRefs.includes(e.id)) ||
-      p.rules.some((r) => r.triggeredEventRefs.includes(e.id))
+      p.policies.some((x) => x.triggeredEventRefs.includes(e.id))
     const hasConsumer =
       p.behaviors.some((b) => b.subscribedEventRefs.includes(e.id)) ||
-      p.rules.some((r) => r.subscribedEventRefs.includes(e.id))
+      p.policies.some((x) => x.subscribedEventRefs.includes(e.id))
     if (!hasProducer && !hasConsumer) {
       issues.push({
         level: 'warning',
@@ -145,9 +161,9 @@ function checkRefs(
 }
 
 /**
- * 在事件-规则有向图上检测环路。
- * 节点：behavior:<id> / rule:<id> / event:<id>
- * 边：BHV --produces--> EVT，EVT --> BHV(订阅)，EVT --> RULE(订阅)，RULE --triggers--> EVT
+ * 在事件-策略有向图上检测环路。
+ * 节点：behavior:<id> / policy:<id> / event:<id>
+ * 边：BHV --produces--> EVT，EVT --> BHV(订阅)，EVT --> POLICY(订阅)，POLICY --triggers--> EVT
  */
 export function detectCycles(p: OntologyProject): string[][] {
   const adj = new Map<string, string[]>()
@@ -160,9 +176,9 @@ export function detectCycles(p: OntologyProject): string[][] {
     b.producedEventRefs.forEach((e) => add(`BHV:${b.id}`, `EVT:${e}`))
     b.subscribedEventRefs.forEach((e) => add(`EVT:${e}`, `BHV:${b.id}`))
   }
-  for (const r of p.rules) {
-    r.subscribedEventRefs.forEach((e) => add(`EVT:${e}`, `RULE:${r.id}`))
-    r.triggeredEventRefs.forEach((e) => add(`RULE:${r.id}`, `EVT:${e}`))
+  for (const x of p.policies) {
+    x.subscribedEventRefs.forEach((e) => add(`EVT:${e}`, `POLICY:${x.id}`))
+    x.triggeredEventRefs.forEach((e) => add(`POLICY:${x.id}`, `EVT:${e}`))
   }
 
   const WHITE = 0

@@ -5,12 +5,12 @@ import type { OntologyProject } from './types'
  *
  * 覆盖合同全生命周期：录入 → 提交 → 审批（信用风控）→ 激活 →
  *   ├─ 开票分支：创建开票计划 → 开具发票
- *   └─ 配送分支：配送条件检查(规则) → 配送员分配(规则) → 创建配送单 → 确认收货
+ *   └─ 配送分支：配送条件检查(策略) → 配送员分配(策略) → 创建配送单 → 确认收货
  *
  * 完整演示三种闭环模式：
  *   1. 行为→事件→行为（简单链）：提交审批 → ContractSubmitted → 审批合同
- *   2. 行为→事件→规则→事件→行为（智能决策链）：激活合同 → ContractActivated → 配送条件检查 → DeliveryReadyToDispatch → …
- *   3. 规则→事件→规则（规则链）：配送条件检查 → DeliveryReadyToDispatch → 配送员分配规则 → CourierAssigned
+ *   2. 行为→事件→策略→事件→行为（智能决策链）：激活合同 → ContractActivated → 配送条件检查 → DeliveryReadyToDispatch → …
+ *   3. 策略→事件→策略（策略链）：配送条件检查 → DeliveryReadyToDispatch → 配送员分配策略 → CourierAssigned
  *
  * 设计为无环 DAG，且每个事件均有生产者：校验结果应为 0 错误 / 0 警告。
  */
@@ -312,33 +312,29 @@ export const sampleProject: OntologyProject = {
       name: '金额计算规则',
       description: '计算规则：录入合同时自动核算明细小计与合同金额',
       type: 'calculation',
-      subscribedEventRefs: [],
       condition: 'item.subtotal = item.quantity * item.price; contract.amount = sum(items.subtotal)',
-      triggeredEventRefs: [],
     },
     {
       id: 'CreditCheckRule',
       name: '信用检查规则',
       description: '风控规则：审批前同步校验客户信用',
       type: 'risk',
-      subscribedEventRefs: [],
       condition: 'customer.creditUsed + contract.amount <= customer.creditLimit',
-      triggeredEventRefs: [],
     },
+  ],
+  policies: [
     {
       id: 'DeliveryConditionCheck',
-      name: '配送条件检查规则',
-      description: '事件驱动规则：智能决策节点，判断是否需要并可以配送',
-      type: 'event-driven',
+      name: '配送条件检查策略',
+      description: '事件驱动策略：智能决策节点，判断是否需要并可以配送',
       subscribedEventRefs: ['ContractActivated'],
       condition: '产品类型为实物 且 配送区域存在空闲配送员',
       triggeredEventRefs: ['DeliveryReadyToDispatch'],
     },
     {
-      id: 'CourierAssignmentRule',
-      name: '配送员分配规则',
-      description: '事件驱动规则：规则链下一环，按负载与就近原则分配配送员',
-      type: 'event-driven',
+      id: 'CourierAssignmentPolicy',
+      name: '配送员分配策略',
+      description: '事件驱动策略：策略链下一环，按负载与就近原则分配配送员',
       subscribedEventRefs: ['DeliveryReadyToDispatch'],
       condition: '按配送员当前负载与区域就近分配，输出 courierId 与预计送达时间',
       triggeredEventRefs: ['CourierAssigned'],
@@ -355,5 +351,6 @@ export function emptyProject(): OntologyProject {
     behaviors: [],
     events: [],
     rules: [],
+    policies: [],
   }
 }

@@ -6,7 +6,7 @@ export interface ModelMeta {
   legacy: string
   label: string
   /** 对应 OntologyProject 中的集合字段 */
-  collection: 'objects' | 'behaviors' | 'events' | 'rules'
+  collection: 'objects' | 'behaviors' | 'events' | 'rules' | 'policies'
   color: string
   question: string
 }
@@ -44,9 +44,17 @@ export const MODEL_META: Record<ModelKind, ModelMeta> = {
     color: '#9333ea',
     question: '为什么',
   },
+  POLICY: {
+    code: 'POLICY',
+    legacy: 'M4',
+    label: '策略模型',
+    collection: 'policies',
+    color: '#7c3aed',
+    question: '如何反应',
+  },
 }
 
-export const MODEL_KINDS: ModelKind[] = ['OBJ', 'BHV', 'EVT', 'RULE']
+export const MODEL_KINDS: ModelKind[] = ['OBJ', 'BHV', 'EVT', 'RULE', 'POLICY']
 
 export const ATTRIBUTE_TYPES: AttributeType[] = [
   'string',
@@ -71,5 +79,4 @@ export const RULE_TYPES: { value: RuleType; label: string }[] = [
   { value: 'calculation', label: '计算规则' },
   { value: 'derivation', label: '推导规则' },
   { value: 'risk', label: '风控规则' },
-  { value: 'event-driven', label: '事件驱动规则' },
 ]

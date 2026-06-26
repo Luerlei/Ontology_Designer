@@ -6,10 +6,12 @@ import type {
   ModelKind,
   ObjectModel,
   OntologyProject,
+  PolicyModel,
   RuleModel,
 } from '../metamodel/types'
 import { MODEL_META } from '../metamodel/naming'
 import { emptyProject, sampleProject } from '../metamodel/sample'
+import { supplierSampleProject } from '../metamodel/sample.supplier'
 import { validateProject, type ValidationIssue } from '../services/validation'
 import { loadProject, saveProject } from '../services/persistence'
 
@@ -50,6 +52,7 @@ export const useProjectStore = defineStore('project', () => {
       BHV: project.value.behaviors.length,
       EVT: project.value.events.length,
       RULE: project.value.rules.length,
+      POLICY: project.value.policies.length,
     }
   }
 
@@ -62,7 +65,7 @@ export const useProjectStore = defineStore('project', () => {
     return (list(kind) as { id: string }[]).map((m) => m.id)
   }
 
-  function createDefault(kind: ModelKind): ObjectModel | BehaviorModel | EventModel | RuleModel {
+  function createDefault(kind: ModelKind): ObjectModel | BehaviorModel | EventModel | RuleModel | PolicyModel {
     const ids = allIds(kind)
     switch (kind) {
       case 'OBJ':
@@ -98,11 +101,17 @@ export const useProjectStore = defineStore('project', () => {
         return {
           id: uniqueId('NewRule', ids),
           name: '新规则',
-          type: 'event-driven',
-          subscribedEventRefs: [],
+          type: 'validation',
           condition: '',
-          triggeredEventRefs: [],
         } satisfies RuleModel
+      case 'POLICY':
+        return {
+          id: uniqueId('NewPolicy', ids),
+          name: '新策略',
+          subscribedEventRefs: [],
+          triggeredEventRefs: [],
+          condition: '',
+        } satisfies PolicyModel
     }
   }
 
@@ -123,6 +132,11 @@ export const useProjectStore = defineStore('project', () => {
 
   function loadSample() {
     project.value = clone(sampleProject)
+    select('OBJ', project.value.objects[0]?.id ?? null)
+  }
+
+  function loadSupplierSample() {
+    project.value = clone(supplierSampleProject)
     select('OBJ', project.value.objects[0]?.id ?? null)
   }
 
@@ -173,6 +187,7 @@ export const useProjectStore = defineStore('project', () => {
     addModel,
     removeModel,
     loadSample,
+    loadSupplierSample,
     newEmpty,
     replaceProject,
     init,
